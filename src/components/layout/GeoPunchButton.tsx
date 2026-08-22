@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Play, Square, MapPin, Loader2, Globe, AlertTriangle } from 'lucide-react';
+import { Play, Square, MapPin, Loader2, Globe } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 import { useAttendanceStore } from '../../store/attendanceStore';
 import { GeoLocationModal } from './GeoLocationModal';

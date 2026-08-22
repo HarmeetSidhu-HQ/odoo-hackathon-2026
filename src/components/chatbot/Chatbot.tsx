@@ -5,12 +5,7 @@ import {
   Send, 
   Bot, 
   User, 
-  ShieldAlert, 
   Sparkles, 
-  Clock, 
-  AlertTriangle, 
-  Calendar, 
-  Users, 
   Trash2
 } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
@@ -18,7 +13,7 @@ import { useEmployeeStore } from '../../store/employeeStore';
 import { useAttendanceStore } from '../../store/attendanceStore';
 import { useTimeOffStore } from '../../store/timeOffStore';
 import { formatCurrency, calculateDynamicSalary } from '../../utils/salaryCalculator';
-import type { TimeOffRequest, AttendanceRecord } from '../../types';
+
 
 interface Message {
   id: string;
