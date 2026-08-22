@@ -47,11 +47,17 @@ export const useAuthStore = create<AuthState>()(
         const clean = identifier.trim().toLowerCase();
         // Check if matching Admin
         if (clean === 'dfsaje20260001' || clean === 'sarah.jenkins@dayflow.io' || clean === 'admin') {
+          if (password !== 'adminPass2026') {
+            return { success: false, message: 'Invalid credentials. Please verify your Login ID, Email or Password.' };
+          }
           set({ currentUser: MOCK_USERS.admin, isAuthenticated: true });
           return { success: true };
         }
         // Check if matching John Doe
         if (clean === 'oijodo20260001' || clean === 'john.doe@dayflow.io' || clean === 'employee') {
+          if (password !== 'empPass2026') {
+            return { success: false, message: 'Invalid credentials. Please verify your Login ID, Email or Password.' };
+          }
           set({ currentUser: MOCK_USERS.employee, isAuthenticated: true });
           return { success: true };
         }
@@ -63,10 +69,10 @@ export const useAuthStore = create<AuthState>()(
         if (matched) {
           // Verify temporary password if it exists
           if (matched.temporaryPassword && password !== matched.temporaryPassword) {
-            // Only enforce if password is provided
-            if (password) {
-              return { success: false, message: 'Invalid temporary password.' };
-            }
+            return { success: false, message: 'Invalid temporary password.' };
+          } else if (!matched.temporaryPassword && password !== 'password123') {
+             // default password for existing employees if they don't have a temporary one
+             return { success: false, message: 'Invalid credentials. Please verify your Password.' };
           }
 
           const user: User = {
@@ -85,19 +91,8 @@ export const useAuthStore = create<AuthState>()(
           return { success: true };
         }
 
-        // Fallback demo login
-        const fallbackUser: User = {
-          id: `user-${Date.now()}`,
-          loginId: identifier.toUpperCase(),
-          name: identifier.includes('@') ? identifier.split('@')[0] : identifier,
-          email: identifier.includes('@') ? identifier : `${identifier.toLowerCase()}@dayflow.io`,
-          role: 'employee',
-          companyName: 'Dayflow Technologies',
-          avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=256',
-          employeeId: 'emp-002',
-        };
-        set({ currentUser: fallbackUser, isAuthenticated: true });
-        return { success: true };
+        // Return error if no user matched
+        return { success: false, message: 'Invalid credentials. Please verify your Login ID or Email.' };
       },
 
       signup: (payload) => {
