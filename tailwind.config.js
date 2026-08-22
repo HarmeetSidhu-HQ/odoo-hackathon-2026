@@ -7,9 +7,9 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['"Outfit"', 'sans-serif'],
-        mono: ['"JetBrains Mono"', 'monospace'],
-        display: ['"Outfit"', 'sans-serif'],
+        sans: ['var(--font-body)'],
+        mono: ['var(--font-mono)'],
+        display: ['var(--font-display)'],
       },
       colors: {
         canvas: {

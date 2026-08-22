@@ -1,6 +1,7 @@
-﻿import { create } from 'zustand';
+import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { AttendanceRecord } from '../types';
+import type { AttendanceRecord, AttendanceAnomaly } from '../types';
+import { evaluateAnomalies as computeAnomalies } from '../utils/anomalyDetector';
 
 interface AttendanceState {
   records: AttendanceRecord[];
@@ -8,14 +9,17 @@ interface AttendanceState {
   checkInTimestamp: string | null; // ISO string
   activeTimerFormatted: string; // e.g. "02:45:10"
   selectedDate: string; // YYYY-MM-DD
+  anomalies: AttendanceAnomaly[];
   
   // Actions
-  toggleCheckIn: (employeeId: string, employeeName: string, employeeLoginId: string) => void;
-  checkInNow: (employeeId: string, employeeName: string, employeeLoginId: string) => void;
+  toggleCheckIn: (employeeId: string, employeeName: string, employeeLoginId: string, locationData?: { status: AttendanceRecord['locationStatus'], zone?: string }) => void;
+  checkInNow: (employeeId: string, employeeName: string, employeeLoginId: string, locationData?: { status: AttendanceRecord['locationStatus'], zone?: string }) => void;
   checkOutNow: (employeeId: string) => void;
   setSelectedDate: (date: string) => void;
   addAttendanceRecord: (record: AttendanceRecord) => void;
   updateAttendanceRecord: (id: string, updates: Partial<AttendanceRecord>) => void;
+  evaluateAnomalies: () => void;
+  resolveAnomaly: (id: string, actionType: string) => void;
   resetAttendanceStore: () => void;
 }
 
@@ -161,17 +165,18 @@ export const useAttendanceStore = create<AttendanceState>()(
       checkInTimestamp: new Date(Date.now() - 4.2 * 3600 * 1000).toISOString(),
       activeTimerFormatted: '04:12:35',
       selectedDate: getTodayDateString(),
+      anomalies: [],
 
-      toggleCheckIn: (employeeId, employeeName, employeeLoginId) => {
+      toggleCheckIn: (employeeId, employeeName, employeeLoginId, locationData) => {
         const { isCheckedIn } = get();
         if (isCheckedIn) {
           get().checkOutNow(employeeId);
         } else {
-          get().checkInNow(employeeId, employeeName, employeeLoginId);
+          get().checkInNow(employeeId, employeeName, employeeLoginId, locationData);
         }
       },
 
-      checkInNow: (employeeId, employeeName, employeeLoginId) => {
+      checkInNow: (employeeId, employeeName, employeeLoginId, locationData) => {
         const now = new Date();
         const today = getTodayDateString();
         const checkInTimeStr = formatTimeString(now);
@@ -189,6 +194,8 @@ export const useAttendanceStore = create<AttendanceState>()(
             checkIn: checkInTimeStr,
             checkOut: null,
             status: 'present',
+            locationStatus: locationData?.status || 'UNVERIFIED',
+            locationZone: locationData?.zone,
           };
         } else {
           const newRecord: AttendanceRecord = {
@@ -202,6 +209,8 @@ export const useAttendanceStore = create<AttendanceState>()(
             workHours: 0.1,
             extraHours: 0,
             status: 'present',
+            locationStatus: locationData?.status || 'UNVERIFIED',
+            locationZone: locationData?.zone,
           };
           updatedRecords = [newRecord, ...records];
         }
@@ -211,6 +220,8 @@ export const useAttendanceStore = create<AttendanceState>()(
           checkInTimestamp: now.toISOString(),
           records: updatedRecords,
         });
+        
+        get().evaluateAnomalies();
       },
 
       checkOutNow: (employeeId) => {
@@ -261,6 +272,8 @@ export const useAttendanceStore = create<AttendanceState>()(
           checkInTimestamp: null,
           records: updatedRecords,
         });
+
+        get().evaluateAnomalies();
       },
 
       setSelectedDate: (date) => set({ selectedDate: date }),
@@ -272,6 +285,29 @@ export const useAttendanceStore = create<AttendanceState>()(
       updateAttendanceRecord: (id, updates) => {
         set((state) => ({
           records: state.records.map((r) => (r.id === id ? { ...r, ...updates } : r)),
+        }));
+        get().evaluateAnomalies();
+      },
+
+      evaluateAnomalies: () => {
+        const { records, anomalies } = get();
+        const newAnomalies = computeAnomalies(records);
+        
+        // Merge new anomalies, keeping isResolved state of existing ones
+        const mergedAnomalies = newAnomalies.map(newAnom => {
+          const existing = anomalies.find(a => a.id === newAnom.id);
+          if (existing) return { ...newAnom, isResolved: existing.isResolved };
+          return newAnom;
+        });
+
+        set({ anomalies: mergedAnomalies });
+      },
+
+      resolveAnomaly: (id, actionType) => {
+        set((state) => ({
+          anomalies: state.anomalies.map(a => 
+            a.id === id ? { ...a, isResolved: true } : a
+          )
         }));
       },
 

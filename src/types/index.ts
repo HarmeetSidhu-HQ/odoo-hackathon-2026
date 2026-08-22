@@ -79,6 +79,8 @@ export interface Employee {
   salaryStructure: SalaryStructure;
   security: SecurityInfo;
   leaveBalance: LeaveBalance;
+  requiresPasswordChange?: boolean;
+  temporaryPassword?: string;
 }
 
 export interface User {
@@ -90,6 +92,8 @@ export interface User {
   companyName: string;
   avatar: string;
   employeeId: string;
+  requiresPasswordChange?: boolean;
+  temporaryPassword?: string;
 }
 
 export type AttendanceStatus = 'present' | 'absent' | 'on_leave' | 'half_day';
@@ -100,11 +104,13 @@ export interface AttendanceRecord {
   employeeName: string;
   employeeLoginId: string;
   date: string; // YYYY-MM-DD
-  checkIn: string | null;
-  checkOut: string | null;
-  workHours: number;
-  extraHours: number;
-  status: AttendanceStatus;
+  checkIn: string | null; // e.g. "09:00 AM"
+  checkOut: string | null; // e.g. "06:00 PM"
+  workHours: number; // e.g. 8.5
+  extraHours: number; // e.g. 0.5 (overtime)
+  status: 'present' | 'absent' | 'half_day' | 'on_leave';
+  locationStatus?: 'OFFICE_VERIFIED' | 'REMOTE_VERIFIED' | 'OUT_OF_BOUNDS' | 'UNVERIFIED';
+  locationZone?: string;
 }
 
 export type LeaveType = 'paid' | 'sick' | 'unpaid' | 'casual';
@@ -133,4 +139,70 @@ export interface SystrayState {
   checkInTime: string | null;
   activeTimer: string;
   activeAttendanceId: string | null;
+}
+
+export interface SalaryBreakdown {
+  baseGross: number;
+  monthlyBasic: number;
+  monthlyHRA: number;
+  monthlySpecialAllowance: number;
+  workingDays: number;
+  unpaidLeaveDays: number;
+  perDayDeductionRate: number;
+  lopDeductionTotal: number;
+  adjustedGross: number;
+  epfDeduction: number;
+  esiDeduction: number;
+  professionalTax: number;
+  tdsDeduction: number;
+  totalDeductions: number;
+  netPayable: number;
+  deductionAuditTrail: Array<{
+    date: string;
+    leaveRequestId: string;
+    reason: string;
+  }>;
+}
+
+export type AnomalyType = 
+  | 'GHOST_PUNCH' 
+  | 'RAPID_BOUNCE' 
+  | 'TIME_DRIFT' 
+  | 'UNAUTHORIZED_OVERTIME' 
+  | 'OFF_HOURS_PUNCH'
+  | 'EXCESSIVE_HOURS';
+
+export interface AttendanceAnomaly {
+  id: string;
+  attendanceRecordId: string;
+  employeeId: string;
+  employeeName: string;
+  type: AnomalyType;
+  severity: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+  score: number; // 0 - 100
+  title: string;
+  description: string;
+  detectedAt: string;
+  isResolved: boolean;
+}
+
+export interface GeoCoordinates {
+  latitude: number;
+  longitude: number;
+  accuracyMeters: number;
+}
+
+export interface OfficeZone {
+  id: string;
+  name: string;
+  center: GeoCoordinates;
+  radiusMeters: number;
+}
+
+export interface GeoValidationResult {
+  isValid: boolean;
+  distanceMeters: number;
+  zoneName?: string;
+  punchMode: 'OFFICE' | 'REMOTE' | 'OUT_OF_BOUNDS';
+  verificationStatus: 'VERIFIED' | 'FLAGGED' | 'REJECTED';
 }

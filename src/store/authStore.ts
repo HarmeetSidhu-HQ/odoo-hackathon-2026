@@ -1,8 +1,8 @@
-﻿import { create } from 'zustand';
+import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { User, Role } from '../types';
-import { initialEmployees } from '../data/mockEmployees';
 import { generateLoginId } from '../utils/idGenerator';
+import { useEmployeeStore } from './employeeStore';
 
 export const MOCK_USERS: Record<Role, User> = {
   admin: {
@@ -33,6 +33,7 @@ interface AuthState {
   login: (identifier: string, password?: string) => { success: boolean; message?: string };
   signup: (payload: { companyName: string; name: string; email: string; phone: string; password?: string; role?: Role; avatar?: string; companyLogo?: string }) => { success: boolean; loginId: string; message?: string };
   switchRole: (role: Role) => void;
+  changePassword: (newPassword: string) => void;
   logout: () => void;
 }
 
@@ -55,10 +56,19 @@ export const useAuthStore = create<AuthState>()(
           return { success: true };
         }
         // Check existing employees list in mock
-        const matched = initialEmployees.find(
+        const allEmployees = useEmployeeStore.getState().employees;
+        const matched = allEmployees.find(
           (e) => e.loginId.toLowerCase() === clean || e.email.toLowerCase() === clean
         );
         if (matched) {
+          // Verify temporary password if it exists
+          if (matched.temporaryPassword && password !== matched.temporaryPassword) {
+            // Only enforce if password is provided
+            if (password) {
+              return { success: false, message: 'Invalid temporary password.' };
+            }
+          }
+
           const user: User = {
             id: `user-${matched.id}`,
             loginId: matched.loginId,
@@ -68,6 +78,8 @@ export const useAuthStore = create<AuthState>()(
             companyName: matched.companyName,
             avatar: matched.avatar,
             employeeId: matched.id,
+            requiresPasswordChange: matched.requiresPasswordChange,
+            temporaryPassword: matched.temporaryPassword,
           };
           set({ currentUser: user, isAuthenticated: true });
           return { success: true };
@@ -109,6 +121,27 @@ export const useAuthStore = create<AuthState>()(
       switchRole: (role: Role) => {
         const targetUser = MOCK_USERS[role];
         set({ currentUser: targetUser, isAuthenticated: true });
+      },
+
+      changePassword: (newPassword: string) => {
+        set((state) => {
+          if (!state.currentUser) return state;
+          
+          // Update the employee in employeeStore as well to clear the flags
+          const { updateEmployee } = useEmployeeStore.getState();
+          updateEmployee(state.currentUser.employeeId, {
+            requiresPasswordChange: false,
+            temporaryPassword: undefined,
+          });
+
+          return {
+            currentUser: {
+              ...state.currentUser,
+              requiresPasswordChange: false,
+              temporaryPassword: undefined,
+            }
+          };
+        });
       },
 
       logout: () => {

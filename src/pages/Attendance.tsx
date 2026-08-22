@@ -1,4 +1,4 @@
-﻿import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { 
   Calendar, 
   ChevronLeft, 
@@ -16,6 +16,7 @@ import { useAttendanceStore } from '../store/attendanceStore';
 import { useAuthStore } from '../store/authStore';
 import { useEmployeeStore } from '../store/employeeStore';
 import { ManualAttendanceModal } from '../components/attendance/ManualAttendanceModal';
+import { AnomalyFeed } from '../components/attendance/AnomalyFeed';
 import type { AttendanceRecord } from '../types';
 
 export const Attendance: React.FC = () => {
@@ -24,8 +25,14 @@ export const Attendance: React.FC = () => {
     isCheckedIn, 
     toggleCheckIn,
     selectedDate,
-    setSelectedDate
+    setSelectedDate,
+    anomalies,
+    evaluateAnomalies
   } = useAttendanceStore();
+
+  useEffect(() => {
+    evaluateAnomalies();
+  }, [evaluateAnomalies]);
 
   const { currentUser } = useAuthStore();
   const { employees } = useEmployeeStore();
@@ -96,6 +103,8 @@ export const Attendance: React.FC = () => {
     const leave = onDateRecords.filter((r) => r.status === 'on_leave').length;
     return { present, absent, leave, total: employees.length };
   }, [records, selectedDate, employees]);
+
+  const activeAnomalies = useMemo(() => anomalies.filter(a => !a.isResolved), [anomalies]);
 
   return (
     <div className="space-y-6 animate-fade-in pb-12">
@@ -265,6 +274,8 @@ export const Attendance: React.FC = () => {
       {/* 2. ADMIN COMPANY-WIDE VIEW */}
       {isAdmin && (
         <div className="space-y-6">
+          <AnomalyFeed />
+          
           <div className="p-4 rounded-xl bg-surface border border-surface-border space-y-4">
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
               <div className="flex items-center gap-2">
@@ -392,14 +403,30 @@ export const Attendance: React.FC = () => {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-surface-border font-mono">
-                    {adminRecordsForDate.map((record: AttendanceRecord) => (
-                      <tr key={record.id} className="hover:bg-surface-elevated/50 transition-colors">
+                    {adminRecordsForDate.map((record: AttendanceRecord) => {
+                      const isAnomalous = activeAnomalies.some(a => a.attendanceRecordId === record.id);
+                      return (
+                      <tr key={record.id} className={`transition-colors ${isAnomalous ? 'bg-amber-500/5 border-l-2 border-l-amber-500 hover:bg-amber-500/10' : 'hover:bg-surface-elevated/50'}`}>
                         <td className="py-3 px-4 text-white font-bold font-sans">
                           {record.employeeName}
                         </td>
                         <td className="py-3 px-4 text-brand-400">{record.employeeLoginId}</td>
                         <td className="py-3 px-4 text-slate-300">
-                          {record.checkIn || <span className="text-slate-600">--:--</span>}
+                          <div className="flex flex-col gap-1">
+                            <span>{record.checkIn || <span className="text-slate-600">--:--</span>}</span>
+                            {record.locationStatus && record.locationStatus !== 'UNVERIFIED' && (
+                              <span className={`text-[9px] font-mono px-1.5 py-0.5 rounded border inline-flex items-center w-fit ${
+                                record.locationStatus === 'OFFICE_VERIFIED' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-sky-500/10 text-sky-400 border-sky-500/20'
+                              }`}>
+                                {record.locationStatus === 'OFFICE_VERIFIED' ? '📍 HQ Office' : `🌍 ${record.locationZone || 'Remote'}`}
+                              </span>
+                            )}
+                            {record.locationStatus === 'OUT_OF_BOUNDS' && (
+                              <span className="text-[9px] font-mono px-1.5 py-0.5 rounded border bg-rose-500/10 text-rose-400 border-rose-500/20 inline-flex w-fit">
+                                ⚠️ Out of Bounds
+                              </span>
+                            )}
+                          </div>
                         </td>
                         <td className="py-3 px-4 text-slate-300">
                           {record.checkOut || (
@@ -426,7 +453,7 @@ export const Attendance: React.FC = () => {
                           </span>
                         </td>
                       </tr>
-                    ))}
+                    )})}
                   </tbody>
                 </table>
               </div>

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useAuthStore } from './store/authStore';
 import { Login } from './pages/Login';
 import { SignUp } from './pages/SignUp';
+import { ForcePasswordChange } from './components/auth/ForcePasswordChange';
 import { Navbar } from './components/layout/Navbar';
 import { Employees } from './pages/Employees';
 import { Attendance } from './pages/Attendance';
@@ -19,6 +20,10 @@ export function App() {
       return <SignUp onNavigateToLogin={() => setAuthView('login')} />;
     }
     return <Login onNavigateToSignUp={() => setAuthView('signup')} />;
+  }
+
+  if (currentUser.requiresPasswordChange) {
+    return <ForcePasswordChange />;
   }
 
   return (

@@ -8,16 +8,52 @@
     --surface: #111827;
     --surface-elevated: #161F30;
     --border: #1F2937;
-    --font-sans: 'Outfit', sans-serif;
+    /* Google Sans unavailable — using Roboto fallback per Material guidelines */
+    --font-display: 'Roboto', -apple-system, sans-serif;
+    --font-body: 'Inter', -apple-system, sans-serif;
     --font-mono: 'JetBrains Mono', monospace;
   }
 
   body {
     background-color: #0B0F17;
     color: #F3F4F6;
-    font-family: 'Outfit', sans-serif;
-    letter-spacing: -0.01em;
+    font-family: var(--font-body);
+    /* Letter spacing handled by specific text classes but providing M3 default */
+    letter-spacing: 0.25px;
   }
+
+  /* Material Design 3 Type Scale Utilities */
+  .display-large { font-family: var(--font-display); font-size: 57px; line-height: 64px; letter-spacing: -0.25px; font-weight: 700; }
+  .display-medium { font-family: var(--font-display); font-size: 45px; line-height: 52px; letter-spacing: 0; font-weight: 700; }
+  .display-small { font-family: var(--font-display); font-size: 36px; line-height: 44px; letter-spacing: 0; font-weight: 700; }
+  
+  .headline-large { font-family: var(--font-display); font-size: 32px; line-height: 40px; letter-spacing: 0; font-weight: 600; }
+  .headline-medium { font-family: var(--font-display); font-size: 28px; line-height: 36px; letter-spacing: 0; font-weight: 600; }
+  .headline-small { font-family: var(--font-display); font-size: 24px; line-height: 32px; letter-spacing: 0; font-weight: 500; }
+
+  .title-large { font-family: var(--font-display); font-size: 22px; line-height: 28px; letter-spacing: 0; font-weight: 500; }
+  .title-medium { font-family: var(--font-display); font-size: 16px; line-height: 24px; letter-spacing: 0.15px; font-weight: 500; }
+  .title-small { font-family: var(--font-display); font-size: 14px; line-height: 20px; letter-spacing: 0.1px; font-weight: 500; }
+
+  .body-large { font-family: var(--font-body); font-size: 16px; line-height: 24px; letter-spacing: 0.5px; font-weight: 400; }
+  .body-medium { font-family: var(--font-body); font-size: 14px; line-height: 20px; letter-spacing: 0.25px; font-weight: 400; }
+  .body-small { font-family: var(--font-body); font-size: 12px; line-height: 16px; letter-spacing: 0.4px; font-weight: 400; }
+
+  .label-large { font-family: var(--font-body); font-size: 14px; line-height: 20px; letter-spacing: 0.1px; font-weight: 500; }
+  .label-medium { font-family: var(--font-body); font-size: 12px; line-height: 16px; letter-spacing: 0.5px; font-weight: 500; }
+  .label-small { font-family: var(--font-body); font-size: 11px; line-height: 16px; letter-spacing: 0.5px; font-weight: 500; }
+
+  /* Map existing HTML elements to M3 Type Scale */
+  h1 { @apply display-large; }
+  h2 { @apply display-medium; }
+  h3 { @apply display-small; }
+  h4 { @apply headline-large; }
+  h5 { @apply headline-medium; }
+  h6 { @apply headline-small; }
+  p { @apply body-large; }
+  label { @apply label-medium; }
+  button { @apply label-large; }
+
 
   input, select, textarea, button {
     font-family: inherit;

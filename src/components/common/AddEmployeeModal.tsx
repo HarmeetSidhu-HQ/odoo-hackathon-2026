@@ -1,4 +1,4 @@
-﻿import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { X, Sparkles, ArrowRight, Shield, UserCircle, CheckCircle2 } from 'lucide-react';
 import { useEmployeeStore } from '../../store/employeeStore';
 import { generateLoginId } from '../../utils/idGenerator';
@@ -23,9 +23,11 @@ export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({ isOpen, onCl
   const [monthlyWage, setMonthlyWage] = useState<number>(120000);
   const [manager] = useState('Sarah Jenkins');
 
-  const liveLoginId = useMemo(() => {
+  const { liveLoginId, tempPassword } = useMemo(() => {
     const year = new Date().getFullYear();
-    return generateLoginId(companyName || 'DF', name || 'NEW USER', year, 1005);
+    const id = generateLoginId(companyName || 'DF', name || 'NEW USER', year, 1005);
+    const pwd = `Temp@${id.slice(-4)}${Math.floor(Math.random() * 899 + 100)}`;
+    return { liveLoginId: id, tempPassword: pwd };
   }, [companyName, name]);
 
   if (!isOpen) return null;
@@ -73,6 +75,8 @@ export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({ isOpen, onCl
         twoFactorEnabled: true,
         activeSessionsCount: 1,
       },
+      requiresPasswordChange: true,
+      temporaryPassword: tempPassword,
     });
 
     onClose();
@@ -102,14 +106,22 @@ export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({ isOpen, onCl
         </div>
 
         {/* Live ID Calculation Banner */}
-        <div className="p-3.5 rounded-xl bg-canvas border border-surface-border flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-            <span className="text-xs text-slate-300 font-medium">Computed Login ID:</span>
+        <div className="p-3.5 rounded-xl bg-canvas border border-surface-border flex items-center justify-between gap-4 flex-wrap">
+          <div className="flex items-center gap-4 flex-1">
+            <div className="flex items-center gap-2.5">
+              <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+              <span className="text-xs text-slate-300 font-medium">Computed Login ID:</span>
+            </div>
+            <span className="px-3 py-1 rounded bg-surface-elevated border border-brand-500/30 text-emerald-400 font-mono text-sm font-bold tracking-wider">
+              {liveLoginId}
+            </span>
           </div>
-          <span className="px-3 py-1 rounded bg-surface-elevated border border-brand-500/30 text-emerald-400 font-mono text-sm font-bold tracking-wider">
-            {liveLoginId}
-          </span>
+          <div className="flex items-center gap-4">
+            <span className="text-xs text-slate-300 font-medium">Temp Password:</span>
+            <span className="px-3 py-1 rounded bg-surface-elevated border border-amber-500/30 text-amber-400 font-mono text-sm font-bold tracking-wider select-all">
+              {tempPassword}
+            </span>
+          </div>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">

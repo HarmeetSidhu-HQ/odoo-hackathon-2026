@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -200,18 +200,7 @@ export const Login: React.FC<LoginProps> = ({ onNavigateToSignUp, onLoginSuccess
             </button>
           </form>
 
-          <div className="mt-6 pt-5 border-t border-surface-border text-center">
-            <p className="text-xs text-slate-400">
-              New organization or employee?{' '}
-              <button
-                type="button"
-                onClick={onNavigateToSignUp}
-                className="text-brand-500 hover:text-brand-400 font-semibold transition-colors cursor-pointer"
-              >
-                Create Enterprise Profile →
-              </button>
-            </p>
-          </div>
+
         </div>
 
         {/* Footer info */}

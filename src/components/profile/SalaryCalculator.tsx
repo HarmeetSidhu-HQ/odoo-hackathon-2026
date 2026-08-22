@@ -1,8 +1,10 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { ShieldAlert, CheckCircle2, TrendingUp, RefreshCw } from 'lucide-react';
 import type { Employee, SalaryStructure } from '../../types';
 import { computeSalaryStructure, formatCurrency } from '../../utils/salaryCalculator';
 import { useEmployeeStore } from '../../store/employeeStore';
+
+import { SalaryDeductionBreakdown } from './SalaryDeductionBreakdown';
 
 interface SalaryCalculatorProps {
   employee: Employee;
@@ -161,6 +163,8 @@ export const SalaryCalculator: React.FC<SalaryCalculatorProps> = ({ employee, is
           </div>
         </div>
       </div>
+
+      <SalaryDeductionBreakdown employee={employee} isAdmin={isAdmin} />
 
       {/* Detailed Breakdown Ledger */}
       <div className="rounded-xl border border-surface-border overflow-hidden bg-canvas">
