@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ShieldAlert, TrendingDown, Calendar, AlertCircle, Info } from 'lucide-react';
-import type { SalaryStructure, TimeOffRequest, Employee } from '../../types';
+import type { Employee } from '../../types';
 import { calculateDynamicSalary, formatCurrency } from '../../utils/salaryCalculator';
 import { useTimeOffStore } from '../../store/timeOffStore';
 

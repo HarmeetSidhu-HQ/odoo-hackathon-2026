@@ -303,7 +303,7 @@ export const useAttendanceStore = create<AttendanceState>()(
         set({ anomalies: mergedAnomalies });
       },
 
-      resolveAnomaly: (id, actionType) => {
+      resolveAnomaly: (id, _actionType) => {
         set((state) => ({
           anomalies: state.anomalies.map(a => 
             a.id === id ? { ...a, isResolved: true } : a

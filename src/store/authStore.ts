@@ -43,7 +43,7 @@ export const useAuthStore = create<AuthState>()(
       currentUser: MOCK_USERS.admin,
       isAuthenticated: true,
 
-      login: (identifier: string) => {
+      login: (identifier: string, password?: string) => {
         const clean = identifier.trim().toLowerCase();
         // Check if matching Admin
         if (clean === 'dfsaje20260001' || clean === 'sarah.jenkins@dayflow.io' || clean === 'admin') {
@@ -123,7 +123,7 @@ export const useAuthStore = create<AuthState>()(
         set({ currentUser: targetUser, isAuthenticated: true });
       },
 
-      changePassword: (newPassword: string) => {
+      changePassword: (_newPassword: string) => {
         set((state) => {
           if (!state.currentUser) return state;
           
@@ -132,7 +132,7 @@ export const useAuthStore = create<AuthState>()(
           updateEmployee(state.currentUser.employeeId, {
             requiresPasswordChange: false,
             temporaryPassword: undefined,
-          });
+          }, state.currentUser.role);
 
           return {
             currentUser: {

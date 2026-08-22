@@ -18,7 +18,7 @@ interface LoginProps {
   onLoginSuccess?: () => void;
 }
 
-export const Login: React.FC<LoginProps> = ({ onNavigateToSignUp, onLoginSuccess }) => {
+export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
   const { login, switchRole } = useAuthStore();
   const [authError, setAuthError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);

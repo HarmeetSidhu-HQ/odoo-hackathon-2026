@@ -1,21 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { 
   Users, 
   Clock, 
   CalendarDays, 
   Search, 
-  Shield, 
-  UserCheck, 
   LogOut, 
   User, 
-  ChevronDown, 
-  Play,
-  Square
+  ChevronDown
 } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 import { useEmployeeStore } from '../../store/employeeStore';
 import { GeoPunchButton } from './GeoPunchButton';
-import type { Role } from '../../types';
 
 interface NavbarProps {
   currentTab: 'employees' | 'attendance' | 'timeoff';
