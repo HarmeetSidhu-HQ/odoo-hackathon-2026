@@ -1,4 +1,4 @@
-﻿import { useState } from 'react';
+import { useState } from 'react';
 import { useAuthStore } from './store/authStore';
 import { Login } from './pages/Login';
 import { SignUp } from './pages/SignUp';
@@ -7,6 +7,7 @@ import { Employees } from './pages/Employees';
 import { Attendance } from './pages/Attendance';
 import { TimeOff } from './pages/TimeOff';
 import { ProfileModal } from './components/profile/ProfileModal';
+import { Chatbot } from './components/chatbot/Chatbot';
 
 export function App() {
   const { isAuthenticated, currentUser } = useAuthStore();
@@ -34,6 +35,9 @@ export function App() {
 
       {/* Profile Modal */}
       <ProfileModal />
+
+      {/* Global AI Chatbot */}
+      <Chatbot />
     </div>
   );
 }
